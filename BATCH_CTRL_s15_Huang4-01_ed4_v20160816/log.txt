@@ -1,0 +1,22 @@
+Bounder settings Wed Aug 17 13:40:20 BST 2016
+Map C: 1
+Measure C: 2
+Threshold: Huang
+Adaptive thresholding: false
+Fit tip to measure C: false
+Join fragments: false
+ED Iterations: 4
+Base back frames: -20
+LoG sigma: 4.01
+
+Bounder Batch Mode: D:\Vasja\software\Bounder_20160816_TestRun\BATCH_CTRL_s15_Huang4-01_ed4_v20160816
+Filter settings-
+Min start frame: 1
+Min frames: 3
+Min max length: 1.8
+Min length change: 0.1
+Min max DCTM: 0.0
+Min max DCBM: 0.0
+Max mean waviness: 0.38
+
+Bounder batch mode finished D:\Vasja\software\Bounder_20160816_TestRun\BATCH_CTRL_s15_Huang4-01_ed4_v20160816
