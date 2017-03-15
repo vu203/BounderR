@@ -34,9 +34,8 @@ dataset.names <- c(
 # SCRIPTS:
 
 Loc.Modules <- c("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/BounderR/GithubBranch_BounderR_20170223")
-scripts <- c("BounderR Module 1_v20170201.R", "BounderR Module 1-1 Import Coordinates_v20160816.R", "BounderR Module 2.R")
+scripts <- c("BounderR Module 1_v20170201.R", "BounderR Module 1-1 Import Coordinates_v20170201.R", "BounderR Module 2.R")
 setwd(Loc.Modules)
-
 
 #-------------------------------------------------------------------------------
 # Objects to keep between script runs when cleaning workspace:
@@ -82,14 +81,7 @@ names(metalist) <- dataset.names
 names(metalist)
 
 ls()
+setwd(Loc.Modules)
+source("BounderR Module 3_v20170201.R", echo = TRUE)
 
-
-save.image(file = "LastWorkspace.Rdata")
-
-
-
-
-
-
-
-
+# save.image(file = "LastWorkspace.Rdata")
