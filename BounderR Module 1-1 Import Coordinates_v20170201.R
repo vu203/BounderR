@@ -1,7 +1,3 @@
-### TODO(vasja): generalise '12' columns in "table1" loop (currently lines 88-89), make global variable, columns per filopodium in filo.txt (cpf.F) and columns per filo in coordinates.txt (cpf.C)  
-### TODO(vasja): generalise '12' columns in "table1" loop (currently lines 88-89)
-
-
 #-------------------------------------------------------------------------------
 # BounderR Module 1.1  -  IMPORTING COORDINATES DATA TABLE
 #-------------------------------------------------------------------------------
@@ -48,7 +44,7 @@ getwd()
 list.files()
 
 #-------------------------------------------------------------------------------
-# Coordinates import
+# Coordinates import  # This section created 'bb' (base backprojections count) in previous versions, this is not accurate anymore, nor required. Add 'bb' elsewhere.
 
 rows.c <- vector(mode = "numeric", length = 0)  
 for (i in seq_along(all.names2)) {
@@ -72,41 +68,22 @@ for (i in extract) {
 		rm(vec, header, tab, top.up.rows, top.up.table, coord.table.i)			
 }
 coord.table <- coord.table[, - (which((names(coord.table) == " ")))]  # Removes extra columns at the beginning of each GC table
-ncol(coord.table)
-bb <- max.t - max.c   # bb for "base backprojections", effectively the n of NA rows
-bb.table <- data.frame(matrix(NA, nrow = bb, ncol = ncol(coord.table)))
-colnames(bb.table) <- colnames(coord.table)
-coord.table <- rbind(bb.table, coord.table)
 
+# Equalise number of rows between tip.table and coord.table
+# comment on 15.03.2017: 
 
+# (kept this section for compatibility with old versions of Bounder (before the 
+# Coordinates table was made consistent with the Filopodia table in CAD-Bounder),
+# however can no longer use this method to accurately set bb. Changed the assignment # of bb so this is now in the parent script (MASTERSCRIPT).
+
+mm <- max.t - max.c   # mm for "mismatch" between the two tables, effectively the n of NA rows present in one but not the other (called 'bb' in previous versions)
+mm.table <- data.frame(matrix(NA, nrow = mm, ncol = ncol(coord.table)))
+colnames(mm.table) <- colnames(coord.table)
+coord.table <- rbind(mm.table, coord.table)
+rm(mm, mm.table)
 
 # Needs cleaning up: 1) extra columns removed (?) and 2) NAs at bottom need pushing to top to match rownumber to T from the Filopodia table (tip.table). Fixed above (bb.table). 3) Missing rows instead of NA rows when structure removed in Edit tracks (see e.g. in this dataset structure number 8, timepoint 92, compare in Filopodia vs Coordinates table): fixed in code below with the use of matching vector. 4) NAs at the bottom of tables coming out as 0.000. fixed in code below with the row sums == 0 (within if statement).
 
-# This loop below is not required for a clean dataset in the future versions of Bounder if the code for Coordinates table in Fiji is made consistent with the code for Filopodia table. For now, clean up with:
-
-
-# min.dT <- min(all.dT, na.rm = TRUE)
-# max.dT <- max(all.dT, na.rm = TRUE)
-
-# dT.vector <- min.dT:max.dT
-# table1 <- data.frame(matrix(NA, nrow = max.t, ncol = 0))
-# for (i in 1:(ncol(coord.table)/12)) {					# Change to 'clean' division
-#	minitable = coord.table[, ((i-1)*12+1):((i)*12)]  # 12 is current number of columns per filo # Changed 12 to 12. 17.8.2016
-#	row.sums = rowSums(minitable)
-#	if (length(which(row.sums == 0)) > 0) {				# Zeroes instead of NAs at bottom of tables
-#		minitable[which(row.sums == 0), ] <- NA
-#	}
-#	dT = minitable[, 1] - min(minitable[, 1], na.rm = TRUE)
-#	minitable = cbind(dT, minitable)      
-#	matching.vector = match(dT.vector, minitable[, 1]) 
-#	matched.table = minitable[matching.vector, ]
-#	table1 = cbind(table1, matched.table)
-#}
-#coord.table <- table1
-
-
-
-	
 
 # Calculate euclidean distance from Base(X,Y) to Tip (X,Y)
 
