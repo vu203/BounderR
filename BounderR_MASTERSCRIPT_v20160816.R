@@ -17,8 +17,8 @@ ls()
 # Where is your data located?
 
 folder.names <- c(
-    folder.name1 = c("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/BounderR/TimeSpentExtending/embed-into-BounderR/BATCH_CTRL_s15_Huang4-01_ed4_v20160816"), 
-    folder.name2 = c("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/BounderR/TimeSpentExtending/embed-into-BounderR/BATCH-ANALYSIS_RENYI2-6_ED4_v20160816") )
+    folder.name1 = c("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/ANALYSIS LOGS/2017-02-15_s18_VASP_Phenotype/NeonCTRL"), 
+    folder.name2 = c("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/ANALYSIS LOGS/2017-02-15_s18_VASP_Phenotype/NeonVASP") )
 n.fold <- length(folder.names)
 cat("Number of folders to analyse :", n.fold)
 folder.names[]
@@ -26,15 +26,16 @@ folder.names[]
 # What do you want to call your datasets (e.g. "Ctrl" and "Drug1")
 
 dataset.names <- c(
-	dataset1 = "Ctrl_s15_Huang4-01"  , # <---- Insert dataset names here.
-	dataset2 = "Ctrl_pool_Renyi2-6"	   # <---- Insert dataset names here.
+	dataset1 = "NeonCTRL"  , # <---- Insert dataset names here.
+	dataset2 = "NeonVASP"	   # <---- Insert dataset names here.
 	)
 
 
 # SCRIPTS:
 
-Loc.Modules <- c("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/BounderR/TimeSpentExtending/embed-into-BounderR")
-scripts <- c("BounderR Module 1_v20160816.R", "BounderR Module 1-1 Import Coordinates_v20160816.R", "BounderR Module 2.R")
+Loc.Modules <- c("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/BounderR/GithubBranch_BounderR_20170223")
+scripts <- c("BounderR Module 1_v20170201.R", "BounderR Module 1-1 Import Coordinates_v20160816.R", "BounderR Module 2.R")
+setwd(Loc.Modules)
 
 
 #-------------------------------------------------------------------------------
