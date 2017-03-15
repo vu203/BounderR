@@ -395,7 +395,7 @@ pxw <- pxw  # USER-DEFINED AT TOP OF SCRIPT
 threshold.inv.per.t = pxw
 threshold.retr.per.t = -pxw
 
-# TipState function. i) Absolute (number of timepoints in each state)
+# BaseState function. i) Absolute (number of timepoints in each state)
 
 BaseState.Abs <- function(x) {
 	base.state <- cut(x,
@@ -404,7 +404,7 @@ BaseState.Abs <- function(x) {
 	retrun(summary(base.state))	
 }
 
-# TipState function. ii) Relative (proportion of time in each state)
+# BaseState function. ii) Relative (proportion of time in each state)
 
 BaseState.Rel <- function(x) {
 	base.state <- cut(x,
