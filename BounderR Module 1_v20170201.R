@@ -54,6 +54,11 @@
 spt <- 2  # seconds per timepoint
 pxw <- 0.065 # pixel width in microns
 
+# How many base backprojected frames were calculated in each dataset?
+
+bb <- 20
+
+
 # For manual input (single folder to analyse):
 
 # setwd("")  #  <---- Set the directory filename containing your data and uncomment. Skip step below (automated input from parent script)
@@ -125,6 +130,8 @@ rm(rows)
 extract <- grep(pattern = c(""), x = all.names)  
 #                            ^ Insert specifier inside "" (e.g. "CTRL"). 
 extract
+
+# --- --- --- END OF OPTIONAL USER INPUT: --- --- ---
 
 
 # Now import all " filopodia.txt" tables into a data frame called "tip.table": 
@@ -222,7 +229,13 @@ all.dB     <- all.dctm - all.dL
 
 ls()
 
+#----------------
+# Quality control:
 
+min.dT <- min(all.dT, na.rm = TRUE)
+stopifnot(bb == abs(min.dT))  # Number of base back-projected frames must match the min dT value in the all.dT table, otherwise hidden problems may occur later!
+
+#----------------
 # SAVING WORKSPACE with raw tables prior to filtering.
 
 # condition <- "Ctrl"
@@ -261,8 +274,6 @@ ls()
 #	rm(name, get)
 #}
 
-rm(i, export, from, content, file.names)
-ls()
 
 #-------------------------------------------------------------------------------
 # BounderR Module 1B  -  DATA CLEAN-UP 
