@@ -29,7 +29,6 @@ source("GraphingTemplates.R")
 
 # par(mfrow = c(2,2))
 
-
 Count <- function(x) length(x[!is.na(x)])			 
 SE <- function(x) sd(x, na.rm=TRUE)/sqrt(Count(x))	 							
 CI <- function(x) 1.96*sd(x, na.rm=TRUE)/sqrt(Count(x))     
@@ -93,17 +92,17 @@ rm(x1, curr.data)
 dev.new()
 par(mfrow = c(2,2))
 
-x1 <- "med.dB.invas"
+x1 <- "med.fdcbm.invas"
 
 curr.data <- StandardGraphInput(x1); curr.data
 Boxplot2(x1, 
     curr.title = "Median Invasion Rate Per Base",              # <---- Remember to edit here!
-    curr.Ylab = expression("Median dB (> 0) [" * mu * "m / 2 s]")  # <---- Remember to edit here!
+    curr.Ylab = expression("Median fDCBM (> 0.065) [" * mu * "m / 2 s]")  # <---- Remember to edit here!
     )
 legend("topright", QuickStats(x1), bty = "n", cex = 0.8)
 CdfPlot2(x1,
 	curr.title = "Median Base Invasion (CDF)",
-	curr.Xlab = expression("Median dB (> 0) [" * mu * "m / 2 s]") )
+	curr.Xlab = expression("Median fDCBM (> 0.065) [" * mu * "m / 2 s]") )
 
 rm(x1, curr.data)
 
@@ -111,24 +110,24 @@ rm(x1, curr.data)
 #------------------------------------------------------------------------------
 # Med base retraction
 
-x1 <- "med.dB.retract"
+x1 <- "med.fdcbm.invas"
 
 curr.data <- StandardGraphInput(x1); curr.data
 Boxplot2(x1, 
     curr.title = "Median Retraction Rate Per Base",              # <---- Remember to edit here!
-    curr.Ylab = expression("Median dB (< 0) [" * mu * "m / 2 s]")   # <---- Remember to edit here!
+    curr.Ylab = expression("Median fDCBM (< 0.065) [" * mu * "m / 2 s]")   # <---- Remember to edit here!
     )
 legend("bottomright", QuickStats(x1), bty = "n", cex = 0.8)
 CdfPlot2(x1,
 	curr.title = "Median Base Retraction (CDF)",
-	curr.Xlab = expression("Median dB (< 0) [" * mu * "m / 2 s]"),
+	curr.Xlab = expression("Median fDCBM (< 0.065) [" * mu * "m / 2 s]"),
 	legend.where = "topleft" )
 rm(x1, curr.data)
 
 
 
-#------------------------------------------------------------------------------
-# Initial DCTM
+# # #------------------------------------------------------------------------------
+# # Initial DCTM
 
 dev.new()
 
@@ -148,41 +147,41 @@ CdfPlot2(x1,
 rm(x1, curr.data)
 
 
-#------------------------------------------------------------------------------
-# Initial dB
+# #------------------------------------------------------------------------------
+# # Initial DCBM
 
-x1 <- "dB99.new.early.med"
+x1 <- "dcbm99.new.early.med"
 
 curr.data <- StandardGraphInput(x1); curr.data
 Boxplot2(x1, 
     curr.title = "Initial Base Movement in nascent filopodia",              # <---- Remember to edit here!
-    curr.Ylab =  expression("dB (median for t = 1-10)  [" * mu * "m / 2 s]")   # <---- Remember to edit here!
+    curr.Ylab =  expression("DCBM (median for t = 1-10)  [" * mu * "m / 2 s]")   # <---- Remember to edit here!
     )
 legend("topright", QuickStats(x1), bty = "n", cex = 0.8)
 CdfPlot2(x1,
-	curr.title = "Initial dB in nascent filopodia (CDF)",
-	curr.Xlab = expression("dB (median for t = 1-10)  [" * mu * "m / 2 s]")  )
+	curr.title = "Initial DCBM in nascent filopodia (CDF)",
+	curr.Xlab = expression("DCBM (median for t = 1-10)  [" * mu * "m / 2 s]")  )
 
 
 rm(x1, curr.data)
 
-#------------------------------------------------------------------------------
-# Initial DCTM vs dB (scatter)
+# # #------------------------------------------------------------------------------
+# # Initial DCTM vs dB (scatter)
 
-x1 <- "dctm99.new.early.med"
-y1 <- "dB99.new.early.med"
+# x1 <- "dctm99.new.early.med"
+# y1 <- "dcbm99.new.early.med"
 
 x1 <- metalist[[1]]$"dctm99.new.early.med"
-y1 <- metalist[[1]]$"dB99.new.early.med"
+y1 <- metalist[[1]]$"dcbm99.new.early.med"
 
 x2 <- metalist[[2]]$"dctm99.new.early.med"
-y2 <- metalist[[2]]$"dB99.new.early.med"
+y2 <- metalist[[2]]$"dcbm99.new.early.med"
 
 
-# curr.data.X <- StandardGraphInput(x1); curr.data.X
-# curr.data.Y <- StandardGraphInput(y1); curr.data.Y
+# # curr.data.X <- StandardGraphInput(x1); curr.data.X
+# # curr.data.Y <- StandardGraphInput(y1); curr.data.Y
 
-curr.cols$v 
+# curr.cols$v 
 c1 <- c(curr.cols[, 1], 0.5)
 c2 <- c(curr.cols[, 2], 0.5)
 
@@ -192,9 +191,9 @@ plot(x1, y1,
     ylim = c(-0.5,0.5), xlim = c(-0.5,0.5),
     type = "p", pch = 16, 
     col = rgb(c1[1], c1[2], c1[3], 0.5),
-    main = "DCTM vs dB per filopodium over initial 10 timepoints",
+    main = "DCTM vs DCBM per filopodium over initial 10 timepoints",
 	xlab = expression("Mean DCTM [" * mu * "m / 2 s]"),
-	ylab = expression("Mean dB [" * mu * "m / 2 s]")
+	ylab = expression("Mean DCBM [" * mu * "m / 2 s]")
     )
     abline(h = 0, col = 'grey80', lty = 2)
     abline(v = 0, col = 'grey80', lty = 2)
@@ -373,6 +372,63 @@ CdfPlot2(x1,
 	curr.title = "Time tip stalling (CDF)",
 	curr.Xlab = expression("Time where abs(FDCTM) < 0.065 " * mu * "m / 2s")
 	)
+
+
+
+
+# PLOT BASE MOVEMEMENT breakdown by time (ADDED 15.03.2017)
+
+#------------------------------------------------------------------------------
+# Time base invading
+
+dev.new()
+par(mfrow = c(3, 2))
+
+x1 <- "all.time.base.inv"
+
+curr.data <- StandardGraphInput(x1); curr.data
+Boxplot2(x1, 
+    curr.title = "Time base invading",              # <---- Remember to edit here!
+    curr.Ylab =  expression("Time where base speed > 0.065 " * mu * "m / s")    # <---- Remember to edit here!
+    )
+legend("topright", QuickStats(x1), bty = "n", cex = 0.8)
+CdfPlot2(x1,
+	curr.title = "Time base extending (CDF)",
+	curr.Xlab = expression("Time where base speed > 0.065 " * mu * "m / 2s")
+	)
+
+#------------------------------------------------------------------------------
+# Time base retracting
+
+x1 <- "all.time.base.retr"
+
+curr.data <- StandardGraphInput(x1); curr.data
+Boxplot2(x1, 
+    curr.title = "Time base retracting",              # <---- Remember to edit here!
+    curr.Ylab =  expression("Time where base speed < -0.065 " * mu * "m / 2s")    # <---- Remember to edit here!
+    )
+legend("topright", QuickStats(x1), bty = "n", cex = 0.8)
+CdfPlot2(x1,
+	curr.title = "Time base retracting (CDF)",
+	curr.Xlab = expression("Time where base speed < -0.065 " * mu * "m / 2s")
+	)
+
+ #------------------------------------------------------------------------------
+# Time base stableing
+
+x1 <- "all.time.base.stable"
+
+curr.data <- StandardGraphInput(x1); curr.data
+Boxplot2(x1, 
+    curr.title = "Time base stable",              # <---- Remember to edit here!
+    curr.Ylab =  expression("Time where abs(FDCBM) < 0.065 " * mu * "m / 2s")    # <---- Remember to edit here!
+    )
+legend("topright", QuickStats(x1), bty = "n", cex = 0.8)
+CdfPlot2(x1,
+	curr.title = "Time base stable (CDF)",
+	curr.Xlab = expression("Time where abs(FDCBM) < 0.065 " * mu * "m / 2s")
+	)
+
 
 
 
