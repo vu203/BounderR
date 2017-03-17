@@ -8,7 +8,6 @@
 rm(list = ls())
 ls()
 
-
 #-------------------------------------------------------------------------------
 # Setting Working Directory locations:
 
@@ -29,18 +28,22 @@ dataset.names <- c(
 	dataset1 = "NeonCTRL"  , # <---- Insert dataset names here.
 	dataset2 = "NeonVASP"	   # <---- Insert dataset names here.
 	)
-
-
+	
+	
 # SCRIPTS:
 
-Loc.Modules <- c("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/BounderR/GithubBranch_BounderR_20170223")
-scripts <- c("BounderR Module 1_v20170201.R", "BounderR Module 1-1 Import Coordinates_v20170201.R", "BounderR Module 2.R")
+Loc.Modules <- c("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/BounderR/GithubBranch_BounderR_20170315_Add-GC-IDs")
+scripts <- c("BounderR Module 1_v20170201.R", "BounderR Module 2.R")
 setwd(Loc.Modules)
+
+# Run Module 3 to compare filopodium properties?
+# compare.phenotypes = TRUE
+
 
 #-------------------------------------------------------------------------------
 # Objects to keep between script runs when cleaning workspace:
 
-keep <- c("Loc.Modules", "folder.names", "dataset.names", "n.fold", "scripts", "metalist", "objectnames", "keep", "iter", "i", "BounderR")  
+keep <- c("Loc.Modules", "folder.names", "dataset.names", "n.fold", "scripts", "metalist", "objectnames", "keep", "iter", "i", "BounderR", "compare.phenotypes")  
 
 
 #-------------------------------------------------------------------------------
@@ -82,6 +85,9 @@ names(metalist)
 
 ls()
 setwd(Loc.Modules)
-source("BounderR Module 3_v20170201.R", echo = TRUE)
 
-# save.image(file = "LastWorkspace.Rdata")
+# if(compare.phenotypes == TRUE) {
+#	 source("BounderR Module 3_v20170201.R", echo = FALSE)
+# }
+
+# setwd(folder.names[1]); save.image(file = "LastWorkspace_VASP.Rdata")
