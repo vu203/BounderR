@@ -3,7 +3,7 @@
 
 
 # This script forms part of a set of analysis scripts for quantifying dynamic 
-# behaviour of filopodia with the Bounder Fiji plugin. 
+# behaviour of filopodia with the Fiji plugin CAD-Bounder. 
 
 # More information available from: vu203@cam.ac.uk. 
 
@@ -50,7 +50,7 @@
 
 
 # What is the rate of timelapse acquisition?
-
+#rm(list = ls())
 spt <- 2  # seconds per timepoint
 pxw <- 0.065 # pixel width in microns
 
@@ -58,11 +58,39 @@ pxw <- 0.065 # pixel width in microns
 
 bb <- 20
 
+# Setting for background subtraction and normalisation
 
+bg.corr.setting <- "boundary"  
+	# "none":      no background correction (necessary if no Bodies table present)
+	# "local":     use local background
+	# "boundary":  use boundary background
+	# "frame":     use frame background
+
+# normalisation.mode.base <- "nor.to.body"  
+	# "nor.to.body": normalise to body fluorescence
+	# "none": 		 use non-normalised values (this is independent of bg subtraction)
+	# nor.to.body is used as default currently, change requires editing script below
+	
+# normalisation.mode.tip <- "nor.to.filo"
+	# "nor.to.filo": normalise to filo fluorescence
+	# "none": 		 use raw values (this is independent of bg subtraction)
+	# nor.to.filo is used as default currently, change requires editing script below
+
+# END OF REQUIRED USER INPUT. 
+# (alter the section below if using on single folder and not calling from the 
+# masterscript for multiple folders)
+
+#-------------------------------------------------------------------------------
 # For manual input (single folder to analyse):
 
 # setwd("")  #  <---- Set the directory filename containing your data and uncomment. Skip step below (automated input from parent script)
-# e.g. setwd("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/TOTAL-ANALYSIS_RENYI2-6_ED4") 
+# e.g. 
+#setwd("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/ANALYSIS LOGS/2017-03_TipF_withBg_TOCA/Huang4-01") 
+#setwd("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/ANALYSIS LOGS/2017-03_TipF_withBg_ENA/Huang4-01") 
+#Loc.modules <- "/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/BounderR/GithubBranch_BounderR_20170315_Add-GC-IDs"
+
+# For backwards compatibility:
+# setwd("/Users/Lab/Documents/Postdoc/ANALYSIS_local-files/ANALYSIS LOGS/2016-09_s13_TOCA_BaseF_manually-corr/s13_TOCA_Renyi2-6_manual-corr_GAP-RFP") 
 
 
 # For automated scripted input of multiple folders (edit in parent script):
@@ -93,19 +121,43 @@ initiate()
 getwd()
 list.files()
 
+#-------------------------------------------------------------------------------
+# Functions for tracking the identity of imported tables by filename:
 
-# END OF REQUIRED USER INPUT. 
+extractID <- function(x) {
+		
+		# This function takes a string with numbers (file name) and concatenates digit characters, 	
+		# separated by "-", e.g. extractID("s13_NeonCyto_GC8.tiff") returns "13-8", which goes into 
+		# column headings to keep track of the origin of the movie.
+		
+		all <- unlist(strsplit(unlist(x), "[^0-9]")) 
+		clean <- all[ !is.na(as.numeric(all)) ] 
+		return(paste0(clean, collapse = "-")) 
+		
+		}	
 
+readID <- function(x) {	
+	
+		# This function is complementary to extract ID: reads the ID string from table 
+		# column headings and identifies the ID portion of it 
+		# e.g. readID("dT (7)_15") returns "15"; 
+		# e.g. readID(colnames(all.dT)[4])
+	
+	unlist(strsplit(x, split = "_"))[2]
+
+}
 
 #-------------------------------------------------------------------------------
 # Read all data tables of "[...] filopodia.txt"
 
-
 Loc <- getwd()
+
 all.names <- list.files(as.character(Loc), pattern = "*Filopodia.txt")
 all.names2 <- list.files(as.character(Loc), pattern = "*Coordinates.txt")
-all.names
-all.names2
+if(bg.corr.setting != 0) {
+	all.names3 <- list.files(as.character(Loc), pattern = "*Bodies.txt")
+}
+# all.names; all.names2; all.names3
 
 # Measure max number of rows in any table, important for binding tables later:
 
@@ -121,6 +173,19 @@ max.t <- max(unlist(rows))
 max.t  # Max number of rows per table.
 rm(rows) 
 
+# As above, except measure max number of rows for the "... Bodies.txt" tables:
+
+if (bg.corr.setting != 0) {
+	rows.bodies <- vector(mode = "numeric", length = 0)	
+	for (i in seq_along(all.names3)) {
+		#print(all.names3[i])
+		rows.bodies <- append(rows.bodies, nrow(read.table(all.names3[i], sep = "\t", skip = 1)))
+		#print(rows.bodies[i])
+	}
+	max.t.bodies <- max(unlist(rows.bodies))
+	max.t.bodies  # Max number of rows per table.
+	rm(rows.bodies) 
+}
 
 # --- --- --- OPTIONAL USER INPUT: --- --- ---
 # Insert a specifier for import (e.g. "CTRL" or "s09") in order to select only a 
@@ -134,14 +199,28 @@ extract
 # --- --- --- END OF OPTIONAL USER INPUT: --- --- ---
 
 
-# Now import all " filopodia.txt" tables into a data frame called "tip.table": 
+# -------------------------------------------------------------------------------
+# Define an ID for each source file	(e.g. ID = "10" for "GC10.tiff")
+	
+	IDs <- 	c()
+	for (i in extract) {	IDs[i] <- extractID(all.names[i])}
+
+# -------------------------------------------------------------------------------
+# Import all data tables while keeping track of movie ID for each data table
+
+# First import all " filopodia.txt" tables into a data frame called "tip.table": 
 
 tip.table <- data.frame(matrix(NA, nrow = max.t, ncol = 0))
 
 for (i in extract) {
 	all.names[i]
+	
+		# Important addition for IDing columns:  # Added 8. feb 2017
+		ID				= extractID(all.names[i]); IDs[i] <- ID
 		vec      	   = readLines(all.names[i])[1]
 		header   	   = unlist(strsplit(vec, "\t"))
+		# Important addition for IDing columns:
+		header		   = paste(header, rep(ID, length(header)), sep = "_") 
 		tab      	   = read.table(all.names[i], sep = "\t", skip = 1)
 		colnames(tab)  = header
 		top.up.rows    = max.t - nrow(tab)
@@ -149,30 +228,92 @@ for (i in extract) {
 						nrow = top.up.rows))
 		colnames(top.up.table) = header
 		tip.table.i    = rbind(tab, top.up.table)
+		# Filopodia table may include empty first column called dT! 
+		superfluous    = which(colnames(tip.table.i) == paste0("dT_", ID))
+		if(length(superfluous) > 0) {tip.table.i = tip.table.i[, -superfluous]}
+		#tip.table <- tip.table[names(tip.table) != paste0("dT_", ID)]
 		tip.table	   = cbind(tip.table, tip.table.i)	
-		rm(vec, header, tab, top.up.rows, top.up.table, tip.table.i)			
+		# Important line edit: include ID:
+		rm(vec, header, tab, top.up.rows, top.up.table, tip.table.i, ID)			
 }
-tip.table <- tip.table[names(tip.table) != "dT"]
+
 tip.table[1:25, 1:9]  # Print top of the table for example filopodium 1.
 
-coord.table <- data.frame(matrix(NA, nrow = max.t, ncol = 0))  # CAREFUL!! Problems with current export format. See Module 1.1 (Import Coordinates)
+#-------------------------------------------------------------------------------
+# Coordinates import  # This section created 'bb' (base backprojections count) in previous versions, this is not accurate anymore, nor required. Add 'bb' elsewhere.
 
+rows.c <- vector(mode = "numeric", length = 0)  
+for (i in seq_along(all.names2)) {
+	rows.c <- append(rows.c, nrow(read.table(all.names2[i], sep = "\t", skip = 1)))
+}
+max.c <- max(rows.c)
+
+coord.table <- data.frame(matrix(NA, nrow = max.c, ncol = 0))
 for (i in extract) {
 	all.names2[i]
+		ID			   = extractID(all.names2[i]); IDs[i] <- ID
 		vec      	   = readLines(all.names2[i])[1]
-		header   	   = unlist(strsplit(vec, "\t"))
+		header   	   = unlist(strsplit(vec, "\t"))		
+		header		   = paste(header, rep(ID, length(header)), sep = "_") 
 		tab      	   = read.table(all.names2[i], sep = "\t", skip = 1)
 		colnames(tab)  = header
-		top.up.rows    = max.t - nrow(tab)
-		top.up.table   = data.frame(matrix(NA, ncol = ncol(tab), 
+		top.up.rows    = max.c - nrow(tab)
+		top.up.table   = data.frame(matrix(NA, ncol = ncol(tab),  
 						nrow = top.up.rows))
 		colnames(top.up.table) = header
 		coord.table.i  = rbind(tab, top.up.table)
+		# Coordinates table may include empty first column! (depending on version)
+		superfluous    = which(colnames(coord.table.i) == paste0(" _", ID))
+		if(length(superfluous) > 0) {coord.table.i = coord.table.i[, -superfluous]}
 		coord.table	   = cbind(coord.table, coord.table.i)	
-		rm(vec, header, tab, top.up.rows, top.up.table, coord.table.i)			
+		rm(vec, header, tab, top.up.rows, top.up.table, coord.table.i, ID)			
 }
-coord.table <- coord.table[, - (which((names(coord.table) == " ")))]
-coord.table[1:20, 1:12]
+coord.table[1:25, 1:12]
+
+# Equalise number of rows between tip.table and coord.table
+# comment on 15.03.2017: 
+
+# (kept this section for compatibility with old versions of Bounder (before the 
+# Coordinates table was made consistent with the Filopodia table in CAD-Bounder),
+# however can no longer use this method to accurately set bb. Changed the assignment # of bb so this is now in the parent script (MASTERSCRIPT).
+
+mm <- max.t - max.c   # mm for "mismatch" between the two tables, effectively the n of NA rows present in one but not the other (called 'bb' in previous versions)
+if(mm > 0) {
+	mm.table <- data.frame(matrix(NA, nrow = mm, ncol = ncol(coord.table)))
+	colnames(mm.table) <- colnames(coord.table)
+	coord.table <- rbind(mm.table, coord.table)
+	rm(mm.table)
+}
+rm(mm)
+
+#-------------------------------------------------------------------------------
+# Bodies import
+
+bodies.table <- data.frame(matrix(NA, nrow = max.t.bodies, ncol = 0))
+
+if(exists("all.names3")) {
+	for(i in extract) {
+
+	all.names3
+		ID			   = extractID(all.names3[i]); IDs[i] <- ID
+		vec      	   = readLines(all.names3[i])[1]
+		header   	   = unlist(strsplit(vec, "\t"))
+		header		   = paste(header, rep(ID, length(header)), sep = "_") ; 
+		
+		tab      	   = read.table(all.names3[i], sep = "\t", skip = 1)
+		top.up.rows	   = max.t.bodies - nrow(tab)
+		top.up.table   = data.frame(matrix(NA, ncol = ncol(tab), 
+						nrow = top.up.rows))
+		colnames(tab)  = header
+		colnames(top.up.table) = header
+		bodies.table.i = rbind(tab, top.up.table)
+		bodies.table   = cbind(bodies.table, bodies.table.i) 
+		rm(vec, header, tab, bodies.table.i, ID)
+	}	
+}	
+
+bodies.table[1:30, 1:14]
+
 
 #-------------------------------------------------------------------------------
 
@@ -188,6 +329,12 @@ names(tip.table[1:9])
 
 all.dT     <- tip.table[, grep(pattern = c("dT"), x = names(tip.table), 
   value = FALSE, fixed = TRUE)]
+
+#----------------
+# Quality control:
+min.dT <- min(all.dT, na.rm = TRUE)
+stopifnot(bb == abs(min.dT))  # min.dT should equal the specified bb. Check 'bb' on top of this script (Module 1)
+#----------------
   
 all.dS     <- all.dT * spt  # Seconds per timepoint defined on top of script.
 
@@ -199,8 +346,6 @@ all.base   <- tip.table[, grep(pattern = c("Base Mean"), x = names(tip.table),
 all.body   <- tip.table[, grep(pattern = c("Body Mean"), x = names(tip.table),
   value = FALSE, fixed = TRUE)]
   
-all.base.nor <- all.base / all.body  
-
 all.tip    <- tip.table[, grep(pattern = c("Tip Mean"), x = names(tip.table), 
   value = FALSE, fixed = TRUE)] 
 
@@ -209,9 +354,6 @@ all.th.tip <- tip.table[, grep(pattern = c("Tip Th Mean"), x = names(tip.table),
 
 all.proj   <- tip.table[, grep(pattern = c("Proj"), x = names(tip.table), 
   value = FALSE, fixed = TRUE)]
-
-all.tip.nor1 <- all.tip / all.proj  # normalise to projection intensity
-all.tip.nor2 <- all.tip / all.body  # normalise to GC body intensity
 
 all.length <- tip.table[, grep(pattern = c("Length"), x = names(tip.table), 
   value = FALSE, fixed = TRUE)]
@@ -227,13 +369,50 @@ all.dcbm  <- tip.table[, grep(pattern = c("DCBM"), x = names(tip.table),  # Add
   
 all.dB     <- all.dctm - all.dL
 
-ls()
+# From bodies table:
+
+if(exists("bodies.table")) {
+	
+body.T <- bodies.table[, grep(pattern = c("T"), x = names(bodies.table), 
+	value = FALSE, fixed = TRUE)]
+body.mean <- bodies.table[, grep(pattern = c("Mean"), x = names(bodies.table), 
+	value = FALSE, fixed = TRUE)]
+}
 
 #----------------
 # Quality control:
-
 min.dT <- min(all.dT, na.rm = TRUE)
 stopifnot(bb == abs(min.dT))  # Number of base back-projected frames must match the min dT value in the all.dT table, otherwise hidden problems may occur later!
+#----------------
+
+#-------------------------------------------------------------------------------
+# Background corrections:
+
+if(bg.corr.setting != "none") {
+	setwd(Loc.Modules)
+	source("BounderR_Module1-2_BgCorrection.R")
+}
+
+#-------------------------------------------------------------------------------
+# Normalisations:
+
+# from direct measuremetns without bg correction:
+
+all.base.nor <- all.base / all.body
+all.tip.nor1 <- all.tip  / all.proj  # normalise to projection intensity
+all.tip.nor2 <- all.tip  / all.body  # normalise to GC body intensity
+all.th.tip.nor1 <- all.th.tip  / all.proj  # normalise to projection intensity
+all.th.tip.nor2 <- all.th.tip  / all.body  # normalise to GC body intensity
+
+# from bg corrected measurements:
+if(bg.corr.setting != "none") {
+	all.base.corr.nor = all.base.corrected / all.body.corrected 
+	all.tip.corr.nor  = all.tip.corrected  / all.body.corrected
+	all.th.tip.corr.nor = all.th.tip.corrected / all.body.corrected
+}
+
+# See bottom of script for the definition of tip.f and all.move
+
 
 #----------------
 # SAVING WORKSPACE with raw tables prior to filtering.
@@ -345,4 +524,17 @@ all.fdcbm   <- sm.dcbm99
 rm(sm.dB99, sm.dctm99, sm.dcbm99)
 ls()
 	
+	
+#-------------------------------------------------------------------------------
+# For use with CCF scripts: 
+# tip.f and all.move are the input for CCF calculations,
+# for convenience define here which version of each to use.
+
+if(bg.corr.setting == "none") {
+	tip.f <- all.th.tip.nor1
+} else {
+	tip.f <- all.th.tip.corr.nor
+}
+
+all.move <- all.fdctm
 
